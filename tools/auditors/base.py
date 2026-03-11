@@ -1,4 +1,5 @@
 """L9 BaseAuditor Protocol v2 — tiered execution, allowlists, two-phase scanning."""
+
 from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
@@ -73,14 +74,14 @@ class AuditorScope:
         for pattern in self.include:
             files.extend(repo_root.glob(pattern))
         if self.exclude:
-            files = [f for f in files
-                     if not any(ex in str(f) for ex in self.exclude)]
+            files = [f for f in files if not any(ex in str(f) for ex in self.exclude)]
         return sorted(set(files))
 
 
 @dataclass
 class Allowlist:
     """Semantic false-positive suppression."""
+
     modules: set[str] = field(default_factory=set)
     patterns: set[str] = field(default_factory=set)
     rules: dict[str, set[str]] = field(default_factory=dict)
@@ -136,9 +137,13 @@ class BaseAuditor(ABC):
         return {"files": files, "repo_root": repo_root}
 
     @abstractmethod
-    def scan(self, files: list[Path], repo_root: Path,
-             index: dict[str, Any] | None = None,
-             dep_indexes: dict[str, dict[str, Any]] | None = None) -> AuditResult: ...
+    def scan(
+        self,
+        files: list[Path],
+        repo_root: Path,
+        index: dict[str, Any] | None = None,
+        dep_indexes: dict[str, dict[str, Any]] | None = None,
+    ) -> AuditResult: ...
 
 
 _REGISTRY: dict[str, type[BaseAuditor]] = {}

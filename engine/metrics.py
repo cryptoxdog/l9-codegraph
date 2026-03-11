@@ -2,6 +2,7 @@
 Lightweight metrics collector for observability.
 Emits structured metric events. Plug into Prometheus, Datadog, or CloudWatch.
 """
+
 import time
 import logging
 from contextlib import contextmanager
@@ -26,8 +27,9 @@ class MetricsCollector:
         self._enabled = enabled
         self._buffer: list[Metric] = []
 
-    def emit(self, name: str, value: float, unit: str = "count",
-             tags: Optional[dict[str, str]] = None) -> None:
+    def emit(
+        self, name: str, value: float, unit: str = "count", tags: Optional[dict[str, str]] = None
+    ) -> None:
         if not self._enabled:
             return
         metric = Metric(

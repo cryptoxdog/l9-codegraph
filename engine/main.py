@@ -5,6 +5,7 @@
 # status: active
 # --- /L9_META ---
 """L9 Golden Repo — FastAPI entrypoint. Replace APP_NAME and wire your engine."""
+
 from __future__ import annotations
 
 import structlog

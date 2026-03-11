@@ -44,6 +44,7 @@ NODE_NAME = "unknown"
 
 # ── Registration API (called by engine's LifecycleHook.startup) ──────────
 
+
 def register_handler(action: str, handler: ActionHandler) -> None:
     """Register a single action handler."""
     _handlers[action] = handler
@@ -73,8 +74,12 @@ def set_packet_bridge(
     _deflate_fn = deflate
     ENGINE_VERSION = engine_version
     NODE_NAME = node_name
-    logger.info("Packet bridge wired: inflate=%s, deflate=%s, node=%s",
-                inflate.__name__, deflate.__name__, node_name)
+    logger.info(
+        "Packet bridge wired: inflate=%s, deflate=%s, node=%s",
+        inflate.__name__,
+        deflate.__name__,
+        node_name,
+    )
 
 
 def clear_handlers() -> None:
@@ -88,6 +93,7 @@ def list_actions() -> list[str]:
 
 
 # ── Execution ────────────────────────────────────────────────────────────
+
 
 async def execute_action(
     action: str,
@@ -121,9 +127,7 @@ async def execute_action(
     handler = _handlers.get(action)
     if not handler:
         available = ", ".join(sorted(_handlers)) or "(none)"
-        raise ValueError(
-            f"Unknown action: {action!r}. Available: {available}"
-        )
+        raise ValueError(f"Unknown action: {action!r}. Available: {available}")
 
     # ── Execute ──
     try:

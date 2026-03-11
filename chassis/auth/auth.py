@@ -41,13 +41,15 @@ logger = logging.getLogger(__name__)
 
 # Paths that never require authentication.
 # Health must stay public for Cloudflare, Coolify, and external uptime monitors.
-PUBLIC_PATHS: frozenset[str] = frozenset({
-    "/v1/health",
-    "/health",
-    "/docs",
-    "/openapi.json",
-    "/redoc",
-})
+PUBLIC_PATHS: frozenset[str] = frozenset(
+    {
+        "/v1/health",
+        "/health",
+        "/docs",
+        "/openapi.json",
+        "/redoc",
+    }
+)
 
 
 class BearerAuthMiddleware(BaseHTTPMiddleware):
@@ -109,7 +111,9 @@ class BearerAuthMiddleware(BaseHTTPMiddleware):
         # Validate Bearer scheme
         parts = auth_header.split(" ", 1)
         if len(parts) != 2 or parts[0].lower() != "bearer":
-            logger.warning("Malformed Authorization header: scheme=%r", parts[0] if parts else "empty")
+            logger.warning(
+                "Malformed Authorization header: scheme=%r", parts[0] if parts else "empty"
+            )
             return JSONResponse(
                 status_code=401,
                 content={

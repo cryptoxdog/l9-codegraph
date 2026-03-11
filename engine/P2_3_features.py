@@ -28,11 +28,8 @@ logger = logging.getLogger(__name__)
 
 
 class FeatureFlags:
-
     def __init__(self, config_path: Optional[str] = None):
-        self.config_path = config_path or os.getenv(
-            "FEATURE_FLAGS_PATH", "config/features.json"
-        )
+        self.config_path = config_path or os.getenv("FEATURE_FLAGS_PATH", "config/features.json")
         self._flags: dict[str, Any] = self._load()
         logger.info("Loaded %d feature flags from %s", len(self._flags), self.config_path)
 
@@ -100,14 +97,15 @@ class FeatureFlags:
             if user_id and user_id in cfg["allowed_users"]:
                 return True
             if user_id:
-                return False            # not in allowlist -> off
+                return False  # not in allowlist -> off
 
         # Percentage rollout
         pct = cfg.get("rollout_percentage", 100)
         if pct < 100 and user_id:
-            bucket = int.from_bytes(
-                hashlib.sha256(f"{name}:{user_id}".encode()).digest()[:4], "big"
-            ) % 100
+            bucket = (
+                int.from_bytes(hashlib.sha256(f"{name}:{user_id}".encode()).digest()[:4], "big")
+                % 100
+            )
             if bucket >= pct:
                 return False
 
@@ -122,13 +120,13 @@ class FeatureFlags:
     # ------------------------------------------------------------------
 
     _OPS = {
-        "eq":  lambda a, b: a == b,
-        "ne":  lambda a, b: a != b,
-        "gt":  lambda a, b: a > b,
+        "eq": lambda a, b: a == b,
+        "ne": lambda a, b: a != b,
+        "gt": lambda a, b: a > b,
         "gte": lambda a, b: a >= b,
-        "lt":  lambda a, b: a < b,
+        "lt": lambda a, b: a < b,
         "lte": lambda a, b: a <= b,
-        "in":  lambda a, b: a in b,
+        "in": lambda a, b: a in b,
     }
 
     def _eval_rules(self, rules: list[dict], ctx: dict) -> bool:
@@ -162,7 +160,10 @@ def feature_flag(name: str, *, user_field: str = "user_id"):
             uid = kwargs.get(user_field)
             if not flags.is_enabled(name, user_id=uid):
                 from fastapi import HTTPException
+
                 raise HTTPException(status_code=404, detail="Feature not available")
             return await func(*args, **kwargs)
+
         return wrapper
+
     return decorator

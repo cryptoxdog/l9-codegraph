@@ -29,6 +29,7 @@ T = TypeVar("T", bound=BaseModel)
 
 # ── Output Schemas ───────────────────────────────────────────
 
+
 class CypherQueryOutput(BaseModel):
     """Expected shape for LLM-generated Cypher."""
 
@@ -80,6 +81,7 @@ class CodeGenOutput(BaseModel):
 
 # ── Validation helper ────────────────────────────────────────
 
+
 def validate_llm_json(raw: str, schema: type[T]) -> T:
     """Parse raw LLM string into a validated Pydantic model."""
     try:
@@ -90,6 +92,7 @@ def validate_llm_json(raw: str, schema: type[T]) -> T:
 
 
 # ── Validated Client ─────────────────────────────────────────
+
 
 class ValidatedLLMClient:
     """
@@ -155,9 +158,7 @@ class ValidatedLLMClient:
 
         return validate_llm_json(raw, GraphAnalysisOutput)
 
-    def generate_code(
-        self, task: str, language: str = "python"
-    ) -> CodeGenOutput:
+    def generate_code(self, task: str, language: str = "python") -> CodeGenOutput:
         clean = sanitize_llm_input(task, max_length=500)
 
         system = (

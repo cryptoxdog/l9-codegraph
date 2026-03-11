@@ -44,10 +44,7 @@ class FeatureFlags:
         Args:
             config_path: Path to features.json (default: config/features.json)
         """
-        self.config_path = config_path or os.getenv(
-            "FEATURE_FLAGS_PATH",
-            "config/features.json"
-        )
+        self.config_path = config_path or os.getenv("FEATURE_FLAGS_PATH", "config/features.json")
         self._flags = self._load_flags()
         logger.info(f"Loaded {len(self._flags)} feature flags from {self.config_path}")
 
@@ -90,7 +87,7 @@ class FeatureFlags:
         flag_name: str,
         user_id: Optional[str] = None,
         context: Optional[dict] = None,
-        default: bool = False
+        default: bool = False,
     ) -> bool:
         """
         Check if feature is enabled for given user/context.
@@ -162,7 +159,7 @@ class FeatureFlags:
         hash_input = f"{flag_name}:{user_id}"
         hash_bytes = hashlib.sha256(hash_input.encode()).digest()
         # Take first 4 bytes as int, mod 100
-        bucket = int.from_bytes(hash_bytes[:4], 'big') % 100
+        bucket = int.from_bytes(hash_bytes[:4], "big") % 100
         return bucket
 
     def _evaluate_rules(self, rules: list[dict], context: dict) -> bool:
@@ -228,6 +225,7 @@ def feature_flag(flag_name: str, user_id_field: str = "user_id"):
 
     If flag is disabled, returns 404.
     """
+
     def decorator(func):
         @wraps(func)
         async def wrapper(*args, **kwargs):
@@ -237,17 +235,14 @@ def feature_flag(flag_name: str, user_id_field: str = "user_id"):
             if not feature_flags.is_enabled(flag_name, user_id=user_id):
                 # Import here to avoid circular dependency
                 from fastapi import HTTPException
-                logger.info(
-                    f"Feature '{flag_name}' disabled for user '{user_id}', "
-                    f"returning 404"
-                )
-                raise HTTPException(
-                    status_code=404,
-                    detail=f"Feature not available"
-                )
+
+                logger.info(f"Feature '{flag_name}' disabled for user '{user_id}', returning 404")
+                raise HTTPException(status_code=404, detail=f"Feature not available")
 
             return await func(*args, **kwargs)
+
         return wrapper
+
     return decorator
 
 

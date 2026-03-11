@@ -8,6 +8,7 @@ Exit codes:
   0 = all checks pass
   1 = one or more FAIL conditions
 """
+
 import hashlib
 import sys
 import yaml

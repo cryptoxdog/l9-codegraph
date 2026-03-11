@@ -2,6 +2,7 @@
 CRM AI Platform — Central Configuration
 All environment-driven. No secrets in code.
 """
+
 import os
 from dataclasses import dataclass, field
 from typing import Optional

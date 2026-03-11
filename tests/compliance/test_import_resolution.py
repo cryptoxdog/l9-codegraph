@@ -1,5 +1,6 @@
 """Automated enforcement of Rule 2 (METHOD_SIGNATURES.md).
 Every import must resolve to an existing file."""
+
 import ast
 from pathlib import Path
 
@@ -21,8 +22,7 @@ def test_all_internal_imports_resolve():
                 if node.module.startswith(("engine", "memory", "chassis")):
                     mod_path = REPO_ROOT / node.module.replace(".", "/")
                     if not (
-                        mod_path.with_suffix(".py").exists()
-                        or (mod_path / "__init__.py").exists()
+                        mod_path.with_suffix(".py").exists() or (mod_path / "__init__.py").exists()
                     ):
                         violations.append(
                             f"{py_file.relative_to(REPO_ROOT)}:{node.lineno} "

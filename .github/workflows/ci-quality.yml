@@ -53,7 +53,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -66,7 +66,7 @@ jobs:
       - name: Install linters
         run: |
           python -m pip install --upgrade pip
-          pip install ruff mypy
+          pip install ruff==0.15.5 mypy==1.14.0
 
       - name: Ruff (lint)
         run: ruff check . --output-format=github
@@ -88,7 +88,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       - name: Run Semgrep
         uses: returntocorp/semgrep-action@v1
@@ -107,7 +107,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -121,14 +121,14 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -e . 2>/dev/null || pip install -r requirements.txt 2>/dev/null || true
-          pip install pytest pytest-cov
+          pip install pytest==8.3.5 pytest-cov==6.0.0
 
       - name: Run tests with coverage
         run: pytest tests/ --cov=. --cov-report=xml --cov-report=term --ignore=tests/e2e || true
         continue-on-error: true
 
       - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@master
+        uses: SonarSource/sonarqube-scan-action@v6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -149,7 +149,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -197,7 +197,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -209,7 +209,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -e . 2>/dev/null || pip install -r requirements.txt 2>/dev/null || true
-          pip install pytest pytest-asyncio pytest-cov httpx
+          pip install pytest==8.3.5 pytest-asyncio pytest-cov==6.0.0 httpx
           # Install any project-specific test deps
           if [ -n "${{ vars.TEST_EXTRA_DEPS }}" ]; then
             pip install ${{ vars.TEST_EXTRA_DEPS }}
@@ -223,7 +223,7 @@ jobs:
         run: pytest tests/ -v --cov=. --cov-report=xml --cov-report=term --ignore=tests/e2e
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage.xml
@@ -241,7 +241,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       - name: Validate YAML files
         run: |
@@ -259,7 +259,7 @@ jobs:
     name: Shell Script Lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
       - name: Install shellcheck
         run: sudo apt-get install -y shellcheck
       - name: Run shellcheck
@@ -273,13 +273,13 @@ jobs:
     name: Secret Scanning (bandit)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
       - name: Run bandit
         run: |
-          pip install bandit
+          pip install bandit==1.9.0
           bandit -r . -ll --exclude ./.venv,./node_modules,./.git
 
   # ===========================================================================
@@ -341,7 +341,7 @@ jobs:
     name: Pre-commit Hooks
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"

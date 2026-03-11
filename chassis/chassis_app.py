@@ -52,6 +52,7 @@ logger = logging.getLogger(__name__)
 #  CHASSIS-OWNED CONFIGURATION  (engine never touches this)
 # ═══════════════════════════════════════════════════════════════════════════
 
+
 class ChassisSettings(BaseSettings):
     """
     Minimal config the chassis itself needs.
@@ -84,6 +85,7 @@ _chassis_settings = ChassisSettings()
 #  CHASSIS-OWNED ENVELOPE MODELS
 # ═══════════════════════════════════════════════════════════════════════════
 
+
 class ExecuteRequest(BaseModel):
     """Universal execute request envelope — chassis contract."""
 
@@ -106,6 +108,7 @@ class ExecuteResponse(BaseModel):
 # ═══════════════════════════════════════════════════════════════════════════
 #  LIFECYCLE HOOK — the engine's ONLY coupling surface to the chassis
 # ═══════════════════════════════════════════════════════════════════════════
+
 
 class LifecycleHook(ABC):
     """
@@ -183,6 +186,7 @@ class _NoOpLifecycle(LifecycleHook):
 #  HOOK RESOLUTION  (env var → importlib → instance)
 # ═══════════════════════════════════════════════════════════════════════════
 
+
 def _resolve_hook(hook: LifecycleHook | None) -> LifecycleHook:
     """
     Priority:
@@ -212,6 +216,7 @@ def _resolve_hook(hook: LifecycleHook | None) -> LifecycleHook:
 # ═══════════════════════════════════════════════════════════════════════════
 #  APPLICATION FACTORY
 # ═══════════════════════════════════════════════════════════════════════════
+
 
 def create_app(
     *,
@@ -317,11 +322,7 @@ def create_app(
         try:
             result = await hook.health(tenant=tenant, trace_id=trace_id)
 
-            status_code = (
-                200
-                if result.get("data", {}).get("status") == "healthy"
-                else 503
-            )
+            status_code = 200 if result.get("data", {}).get("status") == "healthy" else 503
             return JSONResponse(content=result, status_code=status_code)
 
         except Exception as exc:

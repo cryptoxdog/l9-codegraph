@@ -53,7 +53,9 @@ class PIISensitivity(str, Enum):
 
 _PII_PATTERNS: dict[PIICategory, re.Pattern] = {
     PIICategory.EMAIL: re.compile(r"[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}"),
-    PIICategory.PHONE: re.compile(r"(?:\+?1[\-\s.]?)?\(?[0-9]{3}\)?[\-\s.]?[0-9]{3}[\-\s.]?[0-9]{4}"),
+    PIICategory.PHONE: re.compile(
+        r"(?:\+?1[\-\s.]?)?\(?[0-9]{3}\)?[\-\s.]?[0-9]{3}[\-\s.]?[0-9]{4}"
+    ),
     PIICategory.SSN: re.compile(r"\b[0-9]{3}[\-\s]?[0-9]{2}[\-\s]?[0-9]{4}\b"),
     PIICategory.IP_ADDRESS: re.compile(r"\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b"),
 }
@@ -109,14 +111,28 @@ class PIIHandler:
             key_lower = key.lower()
             for hint, (cat, sens) in self._hints.items():
                 if hint in key_lower:
-                    results.append(PIIDetection(field_path=path, category=cat, sensitivity=sens, detected_by="field_name"))
+                    results.append(
+                        PIIDetection(
+                            field_path=path,
+                            category=cat,
+                            sensitivity=sens,
+                            detected_by="field_name",
+                        )
+                    )
                     break
             else:
                 if isinstance(value, str):
                     for cat, pattern in _PII_PATTERNS.items():
                         if pattern.search(value):
                             sens = _PII_FIELD_HINTS.get(cat.value, (cat, PIISensitivity.MEDIUM))[1]
-                            results.append(PIIDetection(field_path=path, category=cat, sensitivity=sens, detected_by="pattern"))
+                            results.append(
+                                PIIDetection(
+                                    field_path=path,
+                                    category=cat,
+                                    sensitivity=sens,
+                                    detected_by="pattern",
+                                )
+                            )
                             break
         return results
 

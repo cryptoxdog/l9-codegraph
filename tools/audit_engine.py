@@ -13,6 +13,7 @@ Usage:
   python tools/audit_engine.py --json       # JSON output
   python tools/audit_engine.py --exclude engine/legacy/
 """
+
 import argparse
 import ast
 import json as json_mod
@@ -29,7 +30,7 @@ ENGINE_DIR = REPO_ROOT / "engine"
 @dataclass
 class Finding:
     severity: str  # CRITICAL, HIGH, MEDIUM, INFO
-    code: str      # C-001, H-007, etc.
+    code: str  # C-001, H-007, etc.
     rule: int
     group: str
     message: str
@@ -93,19 +94,27 @@ def check_naming(files: list[Path], result: AuditResult):
                         if re.match(r"^[a-z]+[A-Z]", name):
                             counter += 1
                             result.add(
-                                severity="CRITICAL", code=f"C-{counter:03d}", rule=1,
-                                group="naming", message=f"camelCase field '{name}'",
-                                file=str(rel), line=item.lineno,
-                                fix_hint=f"Rename to {re.sub(r'([A-Z])', r'_\1', name).lower()}"
+                                severity="CRITICAL",
+                                code=f"C-{counter:03d}",
+                                rule=1,
+                                group="naming",
+                                message=f"camelCase field '{name}'",
+                                file=str(rel),
+                                line=item.lineno,
+                                fix_hint=f"Rename to {re.sub(r'([A-Z])', r'_\1', name).lower()}",
                             )
                         # Rule 2: flatcase detection (long single-word fields)
                         elif len(name) > 12 and "_" not in name and name.islower():
                             counter += 1
                             result.add(
-                                severity="CRITICAL", code=f"C-{counter:03d}", rule=2,
-                                group="naming", message=f"Likely flatcase field '{name}'",
-                                file=str(rel), line=item.lineno,
-                                fix_hint="Add underscores: e.g., candidate_prop not candidateprop"
+                                severity="CRITICAL",
+                                code=f"C-{counter:03d}",
+                                rule=2,
+                                group="naming",
+                                message=f"Likely flatcase field '{name}'",
+                                file=str(rel),
+                                line=item.lineno,
+                                fix_hint="Add underscores: e.g., candidate_prop not candidateprop",
                             )
                         # Rule 3: Field(alias=...) detection
                         if isinstance(item.value, ast.Call):
@@ -113,11 +122,14 @@ def check_naming(files: list[Path], result: AuditResult):
                                 if kw.arg == "alias":
                                     counter += 1
                                     result.add(
-                                        severity="CRITICAL", code=f"C-{counter:03d}", rule=3,
+                                        severity="CRITICAL",
+                                        code=f"C-{counter:03d}",
+                                        rule=3,
                                         group="naming",
                                         message=f"Field alias on '{name}' -- banned per FIELD_NAMES.md",
-                                        file=str(rel), line=item.lineno,
-                                        fix_hint="Remove alias. YAML key = Python field = attribute access."
+                                        file=str(rel),
+                                        line=item.lineno,
+                                        fix_hint="Remove alias. YAML key = Python field = attribute access.",
                                     )
                 # Rule 4: populate_by_name in model_config
                 for item in node.body:
@@ -128,11 +140,14 @@ def check_naming(files: list[Path], result: AuditResult):
                                 if "populate_by_name" in src:
                                     counter += 1
                                     result.add(
-                                        severity="CRITICAL", code=f"C-{counter:03d}", rule=4,
+                                        severity="CRITICAL",
+                                        code=f"C-{counter:03d}",
+                                        rule=4,
                                         group="naming",
                                         message="populate_by_name in model_config -- banned",
-                                        file=str(py_file.relative_to(REPO_ROOT)), line=item.lineno,
-                                        fix_hint="Remove populate_by_name. No aliases = no need."
+                                        file=str(py_file.relative_to(REPO_ROOT)),
+                                        line=item.lineno,
+                                        fix_hint="Remove populate_by_name. No aliases = no need.",
                                     )
 
 
@@ -156,35 +171,44 @@ def check_security(files: list[Path], result: AuditResult):
                 if node.func.id in ("eval", "exec", "compile"):
                     counter += 1
                     result.add(
-                        severity="CRITICAL", code=f"C-{counter:03d}", rule=6,
+                        severity="CRITICAL",
+                        code=f"C-{counter:03d}",
+                        rule=6,
                         group="security",
                         message=f"{node.func.id}() call -- use dispatch table instead",
-                        file=str(rel), line=node.lineno,
-                        fix_hint="Replace with explicit dispatch: OPERATORS[op](a, b)"
+                        file=str(rel),
+                        line=node.lineno,
+                        fix_hint="Replace with explicit dispatch: OPERATORS[op](a, b)",
                     )
 
         # Rule 7: f-string in Cypher (LIMIT/SKIP/WHERE values)
         for i, line in enumerate(lines, 1):
             # Detect f-strings with LIMIT/SKIP value interpolation
-            if re.search(r'f["'].*LIMIT\s*\{', line) or re.search(r'f["'].*SKIP\s*\{', line):
+            if re.search(r"f[\"'].*LIMIT\s*\{", line) or re.search(r"f[\"'].*SKIP\s*\{", line):
                 counter += 1
                 result.add(
-                    severity="CRITICAL", code=f"C-{counter:03d}", rule=7,
+                    severity="CRITICAL",
+                    code=f"C-{counter:03d}",
+                    rule=7,
                     group="security",
                     message="f-string interpolation in LIMIT/SKIP -- use $param",
-                    file=str(rel), line=i,
-                    fix_hint="Use parameters: {'limit': top_n} with $limit in Cypher"
+                    file=str(rel),
+                    line=i,
+                    fix_hint="Use parameters: {'limit': top_n} with $limit in Cypher",
                 )
             # Rule 8: str() on collections in query context
-            if re.search(r'str\(\[', line) or re.search(r'str\(.*list', line):
+            if re.search(r"str\(\[", line) or re.search(r"str\(.*list", line):
                 if "cypher" in line.lower() or "query" in line.lower() or "gds" in line.lower():
                     counter += 1
                     result.add(
-                        severity="HIGH", code=f"H-{counter:03d}", rule=8,
+                        severity="HIGH",
+                        code=f"H-{counter:03d}",
+                        rule=8,
                         group="security",
                         message="str() on collection in query context -- use json.dumps()",
-                        file=str(rel), line=i,
-                        fix_hint="json.dumps(my_list) not str(my_list)"
+                        file=str(rel),
+                        line=i,
+                        fix_hint="json.dumps(my_list) not str(my_list)",
                     )
 
 
@@ -206,37 +230,53 @@ def check_imports(files: list[Path], result: AuditResult):
                 if node.module.startswith("fastapi"):
                     counter += 1
                     result.add(
-                        severity="HIGH", code=f"H-{counter:03d}", rule=11,
+                        severity="HIGH",
+                        code=f"H-{counter:03d}",
+                        rule=11,
                         group="imports",
                         message=f"FastAPI import in engine/ -- engine never touches HTTP",
-                        file=str(rel), line=node.lineno,
-                        fix_hint="Remove. Engine receives (tenant, payload) from chassis."
+                        file=str(rel),
+                        line=node.lineno,
+                        fix_hint="Remove. Engine receives (tenant, payload) from chassis.",
                     )
                 # Rule 12: Phantom imports (internal modules that don't exist)
                 if node.module.startswith(("engine.", "memory.", "chassis.")):
                     mod_path = REPO_ROOT / node.module.replace(".", "/")
-                    if not (mod_path.with_suffix(".py").exists() or
-                            (mod_path / "__init__.py").exists()):
+                    if not (
+                        mod_path.with_suffix(".py").exists() or (mod_path / "__init__.py").exists()
+                    ):
                         counter += 1
                         result.add(
-                            severity="HIGH", code=f"H-{counter:03d}", rule=12,
+                            severity="HIGH",
+                            code=f"H-{counter:03d}",
+                            rule=12,
                             group="imports",
                             message=f"Phantom import '{node.module}' -- file does not exist",
-                            file=str(rel), line=node.lineno,
-                            fix_hint="Create the file or remove the import."
+                            file=str(rel),
+                            line=node.lineno,
+                            fix_hint="Create the file or remove the import.",
                         )
 
             # Rule 13: Redefining l9-core models
             if isinstance(node, ast.ClassDef):
-                if node.name in ("PacketEnvelope", "TenantContext", "ExecuteRequest",
-                                 "ExecuteResponse", "DelegationLink", "HopEntry"):
+                if node.name in (
+                    "PacketEnvelope",
+                    "TenantContext",
+                    "ExecuteRequest",
+                    "ExecuteResponse",
+                    "DelegationLink",
+                    "HopEntry",
+                ):
                     counter += 1
                     result.add(
-                        severity="HIGH", code=f"H-{counter:03d}", rule=13,
+                        severity="HIGH",
+                        code=f"H-{counter:03d}",
+                        rule=13,
                         group="imports",
                         message=f"Redefining '{node.name}' -- import from l9-core instead",
-                        file=str(rel), line=node.lineno,
-                        fix_hint="from l9.core.envelope import PacketEnvelope"
+                        file=str(rel),
+                        line=node.lineno,
+                        fix_hint="from l9.core.envelope import PacketEnvelope",
                     )
 
 
@@ -258,22 +298,28 @@ def check_errors(files: list[Path], result: AuditResult):
                 if node.type is None:
                     counter += 1
                     result.add(
-                        severity="MEDIUM", code=f"M-{counter:03d}", rule=16,
+                        severity="MEDIUM",
+                        code=f"M-{counter:03d}",
+                        rule=16,
                         group="error",
                         message="Bare 'except:' -- catch specific exceptions",
-                        file=str(rel), line=node.lineno,
-                        fix_hint="except (ValueError, KeyError) as exc:"
+                        file=str(rel),
+                        line=node.lineno,
+                        fix_hint="except (ValueError, KeyError) as exc:",
                     )
                 # Rule 17: except Exception: pass
                 if node.type and isinstance(node.type, ast.Name) and node.type.id == "Exception":
-                    if (len(node.body) == 1 and isinstance(node.body[0], ast.Pass)):
+                    if len(node.body) == 1 and isinstance(node.body[0], ast.Pass):
                         counter += 1
                         result.add(
-                            severity="MEDIUM", code=f"M-{counter:03d}", rule=17,
+                            severity="MEDIUM",
+                            code=f"M-{counter:03d}",
+                            rule=17,
                             group="error",
                             message="'except Exception: pass' -- swallowed error",
-                            file=str(rel), line=node.lineno,
-                            fix_hint="Log the error or re-raise."
+                            file=str(rel),
+                            line=node.lineno,
+                            fix_hint="Log the error or re-raise.",
                         )
 
 
@@ -304,11 +350,14 @@ def check_completeness(files: list[Path], result: AuditResult):
             if not has_validation:
                 counter += 1
                 result.add(
-                    severity="HIGH", code=f"H-{counter:03d}", rule=20,
+                    severity="HIGH",
+                    code=f"H-{counter:03d}",
+                    rule=20,
                     group="completeness",
                     message=f"Handler '{node.name}' missing Pydantic payload validation",
-                    file=str(rel), line=node.lineno,
-                    fix_hint=f"Add: request = {action.title()}Payload.model_validate(payload)"
+                    file=str(rel),
+                    line=node.lineno,
+                    fix_hint=f"Add: request = {action.title()}Payload.model_validate(payload)",
                 )
 
 
@@ -330,22 +379,29 @@ def check_patterns(files: list[Path], result: AuditResult):
             if re.search(r"INSERT\s+INTO\s+packetstore", line, re.IGNORECASE):
                 counter += 1
                 result.add(
-                    severity="HIGH", code=f"H-{counter:03d}", rule=24,
+                    severity="HIGH",
+                    code=f"H-{counter:03d}",
+                    rule=24,
                     group="patterns",
                     message="Direct INSERT INTO packetstore -- use ingest_packet()",
-                    file=str(rel), line=i,
-                    fix_hint="from memory.substrate import ingest_packet"
+                    file=str(rel),
+                    line=i,
+                    fix_hint="from memory.substrate import ingest_packet",
                 )
             # Rule 25: Direct HTTP calls bypassing delegate_to_node
-            if re.search(r"httpx\.(post|get|put|delete|patch)\(", line) or \
-               re.search(r"aiohttp\.ClientSession", line):
+            if re.search(r"httpx\.(post|get|put|delete|patch)\(", line) or re.search(
+                r"aiohttp\.ClientSession", line
+            ):
                 counter += 1
                 result.add(
-                    severity="HIGH", code=f"H-{counter:03d}", rule=25,
+                    severity="HIGH",
+                    code=f"H-{counter:03d}",
+                    rule=25,
                     group="patterns",
                     message="Direct HTTP call -- use delegate_to_node()",
-                    file=str(rel), line=i,
-                    fix_hint="from l9.core.delegation import delegate_to_node"
+                    file=str(rel),
+                    line=i,
+                    fix_hint="from l9.core.delegation import delegate_to_node",
                 )
 
     # Rule 26: Missing __init__.py in packages
@@ -355,11 +411,14 @@ def check_patterns(files: list[Path], result: AuditResult):
             if not init.exists():
                 counter += 1
                 result.add(
-                    severity="MEDIUM", code=f"M-{counter:03d}", rule=26,
+                    severity="MEDIUM",
+                    code=f"M-{counter:03d}",
+                    rule=26,
                     group="patterns",
                     message=f"Missing __init__.py in {dirpath.relative_to(REPO_ROOT)}",
-                    file=str(dirpath.relative_to(REPO_ROOT)), line=0,
-                    fix_hint="Create empty __init__.py"
+                    file=str(dirpath.relative_to(REPO_ROOT)),
+                    line=0,
+                    fix_hint="Create empty __init__.py",
                 )
 
 
@@ -369,9 +428,11 @@ def check_patterns(files: list[Path], result: AuditResult):
 def main():
     parser = argparse.ArgumentParser(description="L9 Audit Engine -- 27-Rule Scanner")
     parser.add_argument("--strict", action="store_true", help="Exit 1 on CRITICAL/HIGH")
-    parser.add_argument("--group", choices=["naming", "security", "imports", "error",
-                                            "completeness", "patterns"],
-                        help="Run only one rule group")
+    parser.add_argument(
+        "--group",
+        choices=["naming", "security", "imports", "error", "completeness", "patterns"],
+        help="Run only one rule group",
+    )
     parser.add_argument("--json", action="store_true", help="JSON output")
     parser.add_argument("--fix", action="store_true", help="Auto-fix where possible")
     parser.add_argument("--exclude", nargs="*", default=[], help="Paths to exclude")
@@ -396,11 +457,19 @@ def main():
             fn(files, result)
 
     if args.json:
-        output = [{
-            "severity": f.severity, "code": f.code, "rule": f.rule,
-            "group": f.group, "message": f.message,
-            "file": f.file, "line": f.line, "fix_hint": f.fix_hint,
-        } for f in result.findings]
+        output = [
+            {
+                "severity": f.severity,
+                "code": f.code,
+                "rule": f.rule,
+                "group": f.group,
+                "message": f.message,
+                "file": f.file,
+                "line": f.line,
+                "fix_hint": f.fix_hint,
+            }
+            for f in result.findings
+        ]
         print(json_mod.dumps(output, indent=2))
     else:
         if not result.findings:
@@ -413,8 +482,10 @@ def main():
                 print(f"         Fix: {f.fix_hint}")
             print()
 
-        print(f"Summary: {result.critical_count} CRITICAL, {result.high_count} HIGH, "
-              f"{result.medium_count} MEDIUM, {result.info_count} INFO")
+        print(
+            f"Summary: {result.critical_count} CRITICAL, {result.high_count} HIGH, "
+            f"{result.medium_count} MEDIUM, {result.info_count} INFO"
+        )
 
     if args.strict and (result.critical_count > 0 or result.high_count > 0):
         sys.exit(1)

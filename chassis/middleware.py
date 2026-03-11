@@ -37,6 +37,7 @@ logger = logging.getLogger(__name__)
 
 # ── Request ID / Trace Propagation ────────────────────────────────────
 
+
 class RequestIDMiddleware(BaseHTTPMiddleware):
     """
     Injects X-Request-ID and X-Trace-ID headers.
@@ -63,6 +64,7 @@ class RequestIDMiddleware(BaseHTTPMiddleware):
 
 
 # ── Request Timing ────────────────────────────────────────────────────
+
 
 class TimingMiddleware(BaseHTTPMiddleware):
     """
@@ -95,6 +97,7 @@ class TimingMiddleware(BaseHTTPMiddleware):
 
 # ── Security Headers ──────────────────────────────────────────────────
 
+
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     """
     Adds standard security headers to every response.
@@ -112,6 +115,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
 
 # ── Structured Request Logger ─────────────────────────────────────────
+
 
 class StructuredLogMiddleware(BaseHTTPMiddleware):
     """
@@ -143,6 +147,7 @@ class StructuredLogMiddleware(BaseHTTPMiddleware):
 
 
 # ── Convenience: Apply All ────────────────────────────────────────────
+
 
 def apply_chassis_middleware(
     app,

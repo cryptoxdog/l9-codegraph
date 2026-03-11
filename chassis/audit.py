@@ -41,6 +41,7 @@ logger = logging.getLogger(__name__)
 
 class AuditAction(str, Enum):
     """Auditable action categories — extensible per engine."""
+
     ACCESS = "access"
     MUTATION = "mutation"
     QUERY = "query"
@@ -61,6 +62,7 @@ class AuditSeverity(str, Enum):
 
 class AuditEntry(BaseModel):
     """Immutable audit log entry."""
+
     model_config = {"frozen": True}
 
     audit_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -91,12 +93,15 @@ class RetentionPolicy(BaseModel):
 DEFAULT_RETENTION: dict[str, RetentionPolicy] = {
     "SOC2": RetentionPolicy(tag="SOC2", retention_days=2555, require_immutable_storage=True),
     "GDPR": RetentionPolicy(tag="GDPR", retention_days=1825, require_encryption=True),
-    "HIPAA": RetentionPolicy(tag="HIPAA", retention_days=2190, require_encryption=True, require_immutable_storage=True),
+    "HIPAA": RetentionPolicy(
+        tag="HIPAA", retention_days=2190, require_encryption=True, require_immutable_storage=True
+    ),
     "ECOA": RetentionPolicy(tag="ECOA", retention_days=730),
 }
 
 
 # ── Pluggable sink protocol ──────────────────────────────────────────
+
 
 class AuditSink:
     """

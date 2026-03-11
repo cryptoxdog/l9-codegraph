@@ -92,7 +92,10 @@ class HealthAggregator:
         )
         total_ms = (time.perf_counter() - start) * 1000
 
-        checks = {r.name: {"healthy": r.healthy, "latency_ms": r.latency_ms, "detail": r.detail} for r in results}
+        checks = {
+            r.name: {"healthy": r.healthy, "latency_ms": r.latency_ms, "detail": r.detail}
+            for r in results
+        }
         all_healthy = all(r.healthy for r in results)
         any_healthy = any(r.healthy for r in results)
 
@@ -114,7 +117,9 @@ class HealthAggregator:
         """Run a single named probe."""
         fn = self._probes.get(name)
         if fn is None:
-            return ProbeResult(name=name, healthy=False, latency_ms=0, detail="probe not registered")
+            return ProbeResult(
+                name=name, healthy=False, latency_ms=0, detail="probe not registered"
+            )
         return await self._run_probe(name, fn)
 
     async def _run_probe(self, name: str, fn: ProbeFunc) -> ProbeResult:
@@ -126,11 +131,15 @@ class HealthAggregator:
         except asyncio.TimeoutError:
             latency = (time.perf_counter() - start) * 1000
             logger.warning("Health probe %s timed out after %.0fms", name, latency)
-            return ProbeResult(name=name, healthy=False, latency_ms=round(latency, 2), detail="timeout")
+            return ProbeResult(
+                name=name, healthy=False, latency_ms=round(latency, 2), detail="timeout"
+            )
         except Exception as exc:
             latency = (time.perf_counter() - start) * 1000
             logger.warning("Health probe %s failed: %s", name, exc)
-            return ProbeResult(name=name, healthy=False, latency_ms=round(latency, 2), detail=str(exc))
+            return ProbeResult(
+                name=name, healthy=False, latency_ms=round(latency, 2), detail=str(exc)
+            )
 
     @property
     def probe_names(self) -> list[str]:

@@ -1,0 +1,64 @@
+name: Dependency Review
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  dependency-review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v4
+        with:
+          # ── Vulnerability settings ─────────────────────────
+          fail-on-severity: moderate         # Block moderate+ CVEs
+          vulnerability-check: true
+          # Uncomment to allow specific advisories:
+          # allow-ghsas: GHSA-xxxx-yyyy-zzzz
+
+          # ── License settings ───────────────────────────────
+          license-check: true
+          # Block copyleft / viral licenses
+          deny-licenses: >-
+            GPL-2.0-only,
+            GPL-2.0-or-later,
+            GPL-3.0-only,
+            GPL-3.0-or-later,
+            AGPL-1.0-only,
+            AGPL-3.0-only,
+            AGPL-3.0-or-later,
+            SSPL-1.0,
+            EUPL-1.1,
+            EUPL-1.2
+
+          # Explicitly allow common permissive licenses
+          allow-licenses: >-
+            MIT,
+            Apache-2.0,
+            BSD-2-Clause,
+            BSD-3-Clause,
+            ISC,
+            PSF-2.0,
+            Python-2.0,
+            0BSD,
+            Unlicense,
+            CC0-1.0,
+            CC-BY-4.0,
+            MPL-2.0
+
+          # ── Scope ──────────────────────────────────────────
+          # Only fail on runtime deps (not dev/test)
+          deny-packages: ''
+          # deny-groups: ''
+
+          # ── Output ─────────────────────────────────────────
+          comment-summary-in-pr: always      # Post findings as PR comment
+          warn-only: false                   # Actually block the PR

@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+
+# Environment
+.env
+.env.local
+.env.vps
+*.bak.*
+
+# Coverage
+.coverage
+coverage.xml
+htmlcov/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Misc
+.DS_Store
+*.log
+
+# Perplexity Audit Reports (generated output)
+reports/perplexity_audit/*.json
+reports/perplexity_audit/*.md
+reports/perplexity_audit/phase_packs/
+!reports/perplexity_audit/.gitkeep

@@ -1,0 +1,105 @@
+version: 1.0.0
+generated_from: l9-template v1.0.0
+contracts:
+  engine_level:
+  - path: docs/contracts/FIELD_NAMES.md
+    sha256: <computed-at-stamp-time>
+    required_refs:
+    - .cursorrules
+    - CLAUDE.md
+  - path: docs/contracts/METHOD_SIGNATURES.md
+    sha256: <computed-at-stamp-time>
+    required_refs:
+    - .cursorrules
+    - CLAUDE.md
+  - path: docs/contracts/CYPHER_SAFETY.md
+    sha256: <computed-at-stamp-time>
+    required_refs:
+    - .cursorrules
+    - CLAUDE.md
+  - path: docs/contracts/ERROR_HANDLING.md
+    sha256: <computed-at-stamp-time>
+    required_refs:
+    - .cursorrules
+    - CLAUDE.md
+  - path: docs/contracts/HANDLER_PAYLOADS.md
+    sha256: <computed-at-stamp-time>
+    required_refs:
+    - .cursorrules
+    - CLAUDE.md
+  - path: docs/contracts/PYDANTIC_YAML_MAPPING.md
+    sha256: <computed-at-stamp-time>
+    required_refs:
+    - .cursorrules
+    - CLAUDE.md
+  - path: docs/contracts/DEPENDENCY_INJECTION.md
+    sha256: <computed-at-stamp-time>
+    required_refs:
+    - .cursorrules
+    - CLAUDE.md
+  - path: docs/contracts/TEST_PATTERNS.md
+    sha256: <computed-at-stamp-time>
+    required_refs:
+    - .cursorrules
+    - CLAUDE.md
+  - path: docs/contracts/RETURN_VALUES.md
+    sha256: <computed-at-stamp-time>
+    required_refs:
+    - .cursorrules
+    - CLAUDE.md
+  - path: docs/contracts/BANNED_PATTERNS.md
+    sha256: <computed-at-stamp-time>
+    required_refs:
+    - .cursorrules
+    - CLAUDE.md
+  constellation_level:
+  - path: docs/contracts/PACKET_ENVELOPE_FIELDS.md
+    sha256: <computed-at-stamp-time>
+    required_refs:
+    - .cursorrules
+    - CLAUDE.md
+  - path: docs/contracts/INTER_NODE_DELEGATION.md
+    sha256: <computed-at-stamp-time>
+    required_refs:
+    - .cursorrules
+    - CLAUDE.md
+  - path: docs/contracts/PACKET_TYPE_REGISTRY.md
+    sha256: <computed-at-stamp-time>
+    required_refs:
+    - .cursorrules
+    - CLAUDE.md
+  - path: docs/contracts/DOMAIN_SPEC_VERSIONING.md
+    sha256: <computed-at-stamp-time>
+    required_refs:
+    - .cursorrules
+    - CLAUDE.md
+  - path: docs/contracts/FEEDBACK_LOOPS.md
+    sha256: <computed-at-stamp-time>
+    required_refs:
+    - .cursorrules
+    - CLAUDE.md
+  - path: docs/contracts/NODE_REGISTRATION.md
+    sha256: <computed-at-stamp-time>
+    required_refs:
+    - .cursorrules
+    - CLAUDE.md
+  - path: docs/contracts/ENV_VARS.md
+    sha256: <computed-at-stamp-time>
+    required_refs:
+    - .cursorrules
+    - CLAUDE.md
+  - path: docs/contracts/OBSERVABILITY.md
+    sha256: <computed-at-stamp-time>
+    required_refs:
+    - .cursorrules
+    - CLAUDE.md
+  - path: docs/contracts/MEMORY_SUBSTRATE_ACCESS.md
+    sha256: <computed-at-stamp-time>
+    required_refs:
+    - .cursorrules
+    - CLAUDE.md
+  - path: docs/contracts/SHARED_MODELS.md
+    sha256: <computed-at-stamp-time>
+    required_refs:
+    - .cursorrules
+    - CLAUDE.md

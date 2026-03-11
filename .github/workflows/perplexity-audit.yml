@@ -1,0 +1,149 @@
+# L9 Perplexity Audit Pipeline — GitHub Actions
+# Deploy to: .github/workflows/perplexity-audit.yaml
+
+name: Perplexity Tech Debt Audit
+
+on:
+  pull_request:
+    paths:
+      - '**.py'
+      - 'migrations/**'
+      - 'config/**'
+  schedule:
+    # Daily full audit at 02:00 UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Audit mode'
+        required: true
+        default: 'full'
+        type: choice
+        options:
+          - full
+          - incremental
+          - category
+      category:
+        description: 'Category (for category mode)'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+env:
+  PERPLEXITY_API_KEY: ${{ secrets.PERPLEXITY_API_KEY }}
+
+jobs:
+  incremental-audit:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install httpx structlog pyyaml
+
+      - name: Get changed files
+        id: changed
+        run: |
+          FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.sha }} -- '*.py' | tr '\n' ' ')
+          echo "files=$FILES" >> $GITHUB_OUTPUT
+
+      - name: Run incremental audit
+        run: |
+          python scripts/perplexity_audit_agent.py \
+            --mode incremental \
+            --changed-files ${{ steps.changed.outputs.files }}
+
+      - name: Check for P0 findings
+        run: |
+          if grep -q '"P0"' reports/perplexity_audit/audit_*.json 2>/dev/null; then
+            echo "::error::P0 findings detected — merge blocked"
+            exit 1
+          fi
+
+      - name: Upload audit report
+        uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: audit-report-pr-${{ github.event.pull_request.number }}
+          path: reports/perplexity_audit/
+
+      - name: Comment on PR
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const reports = fs.readdirSync('reports/perplexity_audit/')
+              .filter(f => f.endsWith('.md'));
+            if (reports.length > 0) {
+              const content = fs.readFileSync(`reports/perplexity_audit/${reports[0]}`, 'utf8');
+              const truncated = content.substring(0, 60000);
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: `## 🔍 Perplexity Audit Results\n\n${truncated}`
+              });
+            }
+
+  full-audit:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install httpx structlog pyyaml
+
+      - name: Run full audit
+        run: |
+          python scripts/perplexity_audit_agent.py \
+            --mode ${{ github.event.inputs.mode || 'full' }} \
+            ${{ github.event.inputs.category && format('--category {0}', github.event.inputs.category) || '' }}
+
+      - name: Upload report
+        uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: audit-report-${{ github.run_number }}
+          path: reports/perplexity_audit/
+
+      - name: Create issues for P0 findings
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const reports = fs.readdirSync('reports/perplexity_audit/')
+              .filter(f => f.endsWith('.json'));
+            for (const report of reports) {
+              const data = JSON.parse(fs.readFileSync(`reports/perplexity_audit/${report}`));
+              const p0 = (data.findings || []).filter(f => f.severity === 'P0');
+              for (const finding of p0) {
+                await github.rest.issues.create({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  title: `[P0 AUDIT] ${finding.id}: ${finding.title}`,
+                  body: `## Automated Audit Finding\n\n**Severity:** P0\n**File:** \`${finding.file}\`\n**Category:** ${finding.category}\n\n${finding.description}\n\n**ADR Violations:** ${(finding.adr_violations || []).join(', ')}\n\n**Fix Strategy:** ${finding.fix_strategy}`,
+                  labels: ['tech-debt', 'automated-audit', 'P0']
+                });
+              }
+            }

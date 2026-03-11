@@ -1,0 +1,30 @@
+{
+  "ai_query": {
+    "enabled": true,
+    "rollout_percentage": 10,
+    "description": "AI-powered natural language query endpoint",
+    "owner": "ml-team"
+  },
+  "new_dashboard": {
+    "enabled": true,
+    "allowed_users": ["admin@example.com", "test@example.com"],
+    "description": "Redesigned dashboard (internal testing)"
+  },
+  "experimental_caching": {
+    "enabled": true,
+    "rollout_percentage": 50,
+    "environments": ["staging", "production"],
+    "description": "Redis caching for expensive queries"
+  },
+  "advanced_analytics": {
+    "enabled": true,
+    "rules": [
+      {"field": "plan", "operator": "in", "value": ["enterprise", "professional"]}
+    ],
+    "description": "Analytics for paid plans only"
+  },
+  "beta_api_v2": {
+    "enabled": false,
+    "description": "Next-gen API (not yet ready)"
+  }
+}

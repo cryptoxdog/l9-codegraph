@@ -1,0 +1,24 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ${APP_NAME:-l9-service}-api
+    ports:
+      - "${APP_PORT:-8000}:8000"
+    env_file: .env.local
+    volumes:
+      - .:/app
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  redis:
+    image: redis:7-alpine
+    container_name: ${APP_NAME:-l9-service}-redis
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    restart: unless-stopped

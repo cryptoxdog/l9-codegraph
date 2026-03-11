@@ -1,0 +1,55 @@
+{
+  "ai_query": {
+    "enabled": true,
+    "rollout_percentage": 10,
+    "description": "AI-powered natural language query endpoint",
+    "owner": "ml-team",
+    "jira": "ENG-1234"
+  },
+
+  "new_dashboard": {
+    "enabled": true,
+    "allowed_users": [
+      "admin@example.com",
+      "test@example.com",
+      "demo@example.com"
+    ],
+    "description": "Redesigned dashboard UI (internal testing)",
+    "owner": "frontend-team"
+  },
+
+  "experimental_caching": {
+    "enabled": true,
+    "rollout_percentage": 50,
+    "environments": ["staging", "production"],
+    "description": "Redis caching layer for expensive queries",
+    "owner": "platform-team"
+  },
+
+  "advanced_analytics": {
+    "enabled": true,
+    "rules": [
+      {
+        "field": "plan",
+        "operator": "in",
+        "value": ["enterprise", "professional"]
+      }
+    ],
+    "description": "Advanced analytics features (paid plans only)",
+    "owner": "analytics-team"
+  },
+
+  "beta_api_v2": {
+    "enabled": false,
+    "description": "Next-gen API (not ready for production)",
+    "owner": "api-team"
+  },
+
+  "legacy_endpoint_v1": {
+    "enabled": false,
+    "blocked_users": [],
+    "description": "Deprecated endpoint - disabled for all users",
+    "owner": "api-team",
+    "deprecation_date": "2026-01-01"
+  }
+}

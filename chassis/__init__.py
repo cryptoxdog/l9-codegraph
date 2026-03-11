@@ -16,7 +16,7 @@ via the LifecycleHook + action router pattern.
 """
 
 from chassis.actions import execute_action, register_handler, register_handlers
-from chassis.app import LifecycleHook, create_app
+from chassis.chassis_app import LifecycleHook, create_app
 from chassis.errors import (
     AuthorizationError,
     ChassisError,

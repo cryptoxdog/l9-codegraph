@@ -1,0 +1,177 @@
+# --- L9_META ---
+# l9_schema: 1
+# layer: [domain]
+# tags: [plangraph, constellation, revopsos]
+# status: active
+# --- /L9_META ---
+# RevOpsOS constellation — 8-service revenue operations platform
+
+constellation: revopsos
+
+services:
+  ENRICH:
+    status: built
+    description: Contact and company data enrichment from external sources
+    depends_on: []
+
+  GRAPH:
+    status: built
+    description: Relationship graph engine — maps accounts, contacts, and deals
+    depends_on: []
+
+  SCORE:
+    status: planned
+    description: ML-based lead and account scoring
+    depends_on: [ENRICH, GRAPH]
+
+  ROUTE:
+    status: planned
+    description: Intelligent lead and opportunity routing to reps/queues
+    depends_on: [SCORE, GRAPH]
+
+  FORECAST:
+    status: planned
+    description: Revenue forecast engine using pipeline + historical signals
+    depends_on: [SCORE, ROUTE]
+
+  SIGNAL:
+    status: planned
+    description: Real-time intent and behavioral signal ingestion
+    depends_on: [ENRICH]
+
+  HEALTH:
+    status: planned
+    description: Account health scoring and churn risk detection
+    depends_on: [SCORE, ENRICH]
+
+  HANDOFF:
+    status: planned
+    description: Sales-to-CS handoff automation and playbook execution
+    depends_on: [ROUTE, SCORE]
+
+interfaces:
+  - name: enrich_inbound
+    service: ENRICH
+    direction: inbound
+    protocol: http
+    description: Accepts raw contact/company records for enrichment
+
+  - name: enrich_outbound
+    service: ENRICH
+    direction: outbound
+    protocol: http
+    description: Emits enriched records to downstream services
+
+  - name: graph_inbound
+    service: GRAPH
+    direction: inbound
+    protocol: bolt
+    description: Receives entity relationship data
+
+  - name: graph_query
+    service: GRAPH
+    direction: outbound
+    protocol: bolt
+    description: Serves graph queries to SCORE and ROUTE
+
+  - name: score_inbound
+    service: SCORE
+    direction: inbound
+    protocol: http
+    description: Accepts enriched + graph data for scoring
+
+  - name: score_outbound
+    service: SCORE
+    direction: outbound
+    protocol: http
+    description: Emits scored leads/accounts to ROUTE, FORECAST, HEALTH, HANDOFF
+
+  - name: route_inbound
+    service: ROUTE
+    direction: inbound
+    protocol: http
+    description: Accepts scored leads for routing decisions
+
+  - name: route_outbound
+    service: ROUTE
+    direction: outbound
+    protocol: http
+    description: Emits routing decisions to CRM and HANDOFF
+
+  - name: forecast_inbound
+    service: FORECAST
+    direction: inbound
+    protocol: http
+    description: Accepts pipeline + score data for forecasting
+
+  - name: signal_inbound
+    service: SIGNAL
+    direction: inbound
+    protocol: webhook
+    description: Receives real-time behavioral events
+
+  - name: signal_outbound
+    service: SIGNAL
+    direction: outbound
+    protocol: http
+    description: Forwards processed signals to ENRICH and SCORE
+
+  - name: health_inbound
+    service: HEALTH
+    direction: inbound
+    protocol: http
+    description: Accepts account data for health scoring
+
+  - name: handoff_inbound
+    service: HANDOFF
+    direction: inbound
+    protocol: http
+    description: Triggers handoff workflows from routing decisions
+
+flows:
+  - from: ENRICH
+    to: SCORE
+    label: enriched_data
+
+  - from: GRAPH
+    to: SCORE
+    label: graph_context
+
+  - from: SCORE
+    to: ROUTE
+    label: scored_leads
+
+  - from: SCORE
+    to: FORECAST
+    label: score_signals
+
+  - from: SCORE
+    to: HEALTH
+    label: health_inputs
+
+  - from: SCORE
+    to: HANDOFF
+    label: handoff_triggers
+
+  - from: ROUTE
+    to: FORECAST
+    label: routing_outcomes
+
+  - from: ROUTE
+    to: HANDOFF
+    label: handoff_assignments
+
+  - from: SIGNAL
+    to: ENRICH
+    label: signal_enrichment
+    feedback: false
+
+  - from: HANDOFF
+    to: ROUTE
+    label: handoff_feedback
+    feedback: true
+
+  - from: FORECAST
+    to: SCORE
+    label: forecast_feedback
+    feedback: true

@@ -446,7 +446,7 @@ class PerplexityClient:
                     error=str(exc),
                 )
                 if attempt < self.max_retries:
-                    await asyncio.sleep(2 ** attempt)
+                    await asyncio.sleep(2**attempt)
 
         log.error("query_failed", category=category, file=file_path)
         return []
@@ -526,36 +526,40 @@ class ReportGenerator:
         for sev in ["P0", "P1", "P2", "P3"]:
             lines.append(f"| {sev} | {report.by_severity.get(sev, 0)} |")
 
-        lines.extend(["", "## Category Breakdown", "", "| Category | Count |", "|----------|-------|"])
+        lines.extend(
+            ["", "## Category Breakdown", "", "| Category | Count |", "|----------|-------|"]
+        )
         for cat, count in sorted(report.by_category.items()):
             lines.append(f"| {cat} | {count} |")
 
         lines.extend(["", "## Findings", ""])
         for finding in report.findings:
-            sev_emoji = {"P0": "🔴", "P1": "🟠", "P2": "🟡", "P3": "🟢"}.get(
-                finding.severity, "⚪"
+            sev_emoji = {"P0": "🔴", "P1": "🟠", "P2": "🟡", "P3": "🟢"}.get(finding.severity, "⚪")
+            lines.extend(
+                [
+                    f"### {sev_emoji} {finding.id}: {finding.title}",
+                    "",
+                    f"- **Severity:** {finding.severity}",
+                    f"- **Category:** {finding.category}/{finding.subcategory}",
+                    f"- **File:** `{finding.file}` (L{finding.line_start}-{finding.line_end})",
+                    f"- **Fix Effort:** {finding.fix_effort_hours}h",
+                    f"- **ADR Violations:** {', '.join(finding.adr_violations) or 'None'}",
+                    "",
+                    finding.description,
+                    "",
+                ]
             )
-            lines.extend([
-                f"### {sev_emoji} {finding.id}: {finding.title}",
-                "",
-                f"- **Severity:** {finding.severity}",
-                f"- **Category:** {finding.category}/{finding.subcategory}",
-                f"- **File:** `{finding.file}` (L{finding.line_start}-{finding.line_end})",
-                f"- **Fix Effort:** {finding.fix_effort_hours}h",
-                f"- **ADR Violations:** {', '.join(finding.adr_violations) or 'None'}",
-                "",
-                finding.description,
-                "",
-            ])
             if finding.code_before:
-                lines.extend([
-                    "**Before:**",
-                    f"```python\n{finding.code_before}\n```",
-                    "",
-                    "**After:**",
-                    f"```python\n{finding.code_after}\n```",
-                    "",
-                ])
+                lines.extend(
+                    [
+                        "**Before:**",
+                        f"```python\n{finding.code_before}\n```",
+                        "",
+                        "**After:**",
+                        f"```python\n{finding.code_after}\n```",
+                        "",
+                    ]
+                )
 
         return "\n".join(lines)
 
@@ -576,9 +580,7 @@ class PhasePackGenerator:
         severity_order = {"P0": 0, "P1": 1, "P2": 2, "P3": 3}
         min_rank = severity_order.get(min_severity, 1)
 
-        eligible = [
-            f for f in findings if severity_order.get(f.severity, 3) <= min_rank
-        ]
+        eligible = [f for f in findings if severity_order.get(f.severity, 3) <= min_rank]
 
         # Group by category
         groups: dict[str, list[Finding]] = {}
@@ -587,7 +589,9 @@ class PhasePackGenerator:
 
         pack_dirs: list[Path] = []
         phase_num = 1
-        for category in sorted(groups, key=lambda c: min(severity_order.get(f.severity, 3) for f in groups[c])):
+        for category in sorted(
+            groups, key=lambda c: min(severity_order.get(f.severity, 3) for f in groups[c])
+        ):
             pack_dir = self.output_dir / f"phase-{phase_num:02d}-{category}"
             pack_dir.mkdir(parents=True, exist_ok=True)
 
@@ -597,9 +601,7 @@ class PhasePackGenerator:
 
             # Findings JSON
             findings_json = [f.to_dict() for f in groups[category]]
-            (pack_dir / "findings.json").write_text(
-                json.dumps(findings_json, indent=2)
-            )
+            (pack_dir / "findings.json").write_text(json.dumps(findings_json, indent=2))
 
             # Checklist
             checklist = self._build_checklist(groups[category])
@@ -622,13 +624,15 @@ class PhasePackGenerator:
             "",
         ]
         for f in findings:
-            lines.extend([
-                f"### {f.id}: {f.title}",
-                f"- Severity: {f.severity}",
-                f"- File: `{f.file}`",
-                f"- Strategy: {f.fix_strategy}",
-                "",
-            ])
+            lines.extend(
+                [
+                    f"### {f.id}: {f.title}",
+                    f"- Severity: {f.severity}",
+                    f"- File: `{f.file}`",
+                    f"- Strategy: {f.fix_strategy}",
+                    "",
+                ]
+            )
         return "\n".join(lines)
 
     def _build_checklist(self, findings: list[Finding]) -> str:
@@ -686,7 +690,7 @@ class AuditPipeline:
                 for raw in raw_findings:
                     try:
                         finding = Finding(
-                            id=raw.get("id", f"{category[:3].upper()}-{len(all_findings)+1:03d}"),
+                            id=raw.get("id", f"{category[:3].upper()}-{len(all_findings) + 1:03d}"),
                             category=raw.get("category", category),
                             subcategory=raw.get("subcategory", "general"),
                             severity=raw.get("severity", "P2"),
@@ -767,7 +771,7 @@ class AuditPipeline:
                 )
                 for raw in raw_findings:
                     finding = Finding(
-                        id=raw.get("id", f"{category[:3].upper()}-{len(all_findings)+1:03d}"),
+                        id=raw.get("id", f"{category[:3].upper()}-{len(all_findings) + 1:03d}"),
                         category=raw.get("category", category),
                         subcategory=raw.get("subcategory", "general"),
                         severity=raw.get("severity", "P2"),
@@ -822,17 +826,15 @@ class AuditPipeline:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="L9 Perplexity Audit Agent")
     parser.add_argument(
-        "--mode", choices=["full", "incremental", "category"], default="full",
+        "--mode",
+        choices=["full", "incremental", "category"],
+        default="full",
         help="Audit mode",
     )
     parser.add_argument("--category", type=str, help="Single category to scan")
     parser.add_argument("--scope", type=str, help="Directory or file to scan")
-    parser.add_argument(
-        "--changed-files", nargs="*", help="Files changed (for incremental mode)"
-    )
-    parser.add_argument(
-        "--config", type=str, default=DEFAULT_CONFIG_PATH, help="Config file path"
-    )
+    parser.add_argument("--changed-files", nargs="*", help="Files changed (for incremental mode)")
+    parser.add_argument("--config", type=str, default=DEFAULT_CONFIG_PATH, help="Config file path")
     return parser
 
 

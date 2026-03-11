@@ -147,18 +147,14 @@ class TestExecuteResponse:
         from pydantic import ValidationError
 
         with pytest.raises(ValidationError):
-            ExecuteResponse(
-                status="success", action="match", tenant="t1", meta={}
-            )
+            ExecuteResponse(status="success", action="match", tenant="t1", meta={})
 
     def test_missing_meta_raises(self) -> None:
         """ExecuteResponse rejects missing meta field."""
         from pydantic import ValidationError
 
         with pytest.raises(ValidationError):
-            ExecuteResponse(
-                status="success", action="match", tenant="t1", data={}
-            )
+            ExecuteResponse(status="success", action="match", tenant="t1", data={})
 
 
 # ============================================================================
@@ -235,8 +231,12 @@ class TestExecuteEndpoint:
             "action": "health",
             "tenant": "t1",
             "data": {"status": "healthy"},
-            "meta": {"trace_id": "tr_1", "execution_ms": 5.0,
-                     "version": "1.1.0", "timestamp": "2026-03-04T12:00:00Z"},
+            "meta": {
+                "trace_id": "tr_1",
+                "execution_ms": 5.0,
+                "version": "1.1.0",
+                "timestamp": "2026-03-04T12:00:00Z",
+            },
         }
         with patch(
             "chassis.app.execute_action",
@@ -260,8 +260,12 @@ class TestExecuteEndpoint:
             "action": "match",
             "tenant": "t1",
             "data": {"candidates": []},
-            "meta": {"trace_id": "custom_tr", "execution_ms": 10.0,
-                     "version": "1.1.0", "timestamp": "2026-03-04T12:00:00Z"},
+            "meta": {
+                "trace_id": "custom_tr",
+                "execution_ms": 10.0,
+                "version": "1.1.0",
+                "timestamp": "2026-03-04T12:00:00Z",
+            },
         }
         with patch(
             "chassis.app.execute_action",
@@ -279,7 +283,9 @@ class TestExecuteEndpoint:
             )
         assert resp.status_code == 200
         call_kwargs = mock_exec.call_args
-        assert call_kwargs.kwargs.get("trace_id") == "custom_tr" or                (call_kwargs.args and "custom_tr" in str(call_kwargs))
+        assert call_kwargs.kwargs.get("trace_id") == "custom_tr" or (
+            call_kwargs.args and "custom_tr" in str(call_kwargs)
+        )
 
     def test_execute_invalid_payload_returns_422(self, test_client) -> None:
         """POST /v1/execute with missing required fields returns 422."""
@@ -328,8 +334,12 @@ class TestExecuteEndpoint:
             "action": "match",
             "tenant": "t1",
             "data": {"error": "Validation error in payload"},
-            "meta": {"trace_id": "tr_x", "execution_ms": 3.0,
-                     "version": "1.1.0", "timestamp": "2026-03-04T12:00:00Z"},
+            "meta": {
+                "trace_id": "tr_x",
+                "execution_ms": 3.0,
+                "version": "1.1.0",
+                "timestamp": "2026-03-04T12:00:00Z",
+            },
         }
         with patch(
             "chassis.app.execute_action",
@@ -349,8 +359,12 @@ class TestExecuteEndpoint:
             "action": "sync",
             "tenant": "t1",
             "data": {"error": "Invalid entity schema"},
-            "meta": {"trace_id": "tr_y", "execution_ms": 2.0,
-                     "version": "1.1.0", "timestamp": "2026-03-04T12:00:00Z"},
+            "meta": {
+                "trace_id": "tr_y",
+                "execution_ms": 2.0,
+                "version": "1.1.0",
+                "timestamp": "2026-03-04T12:00:00Z",
+            },
         }
         with patch(
             "chassis.app.execute_action",
@@ -371,8 +385,12 @@ class TestExecuteEndpoint:
             "action": "match",
             "tenant": "t1",
             "data": {"error": "Database connection refused"},
-            "meta": {"trace_id": "tr_z", "execution_ms": 100.0,
-                     "version": "1.1.0", "timestamp": "2026-03-04T12:00:00Z"},
+            "meta": {
+                "trace_id": "tr_z",
+                "execution_ms": 100.0,
+                "version": "1.1.0",
+                "timestamp": "2026-03-04T12:00:00Z",
+            },
         }
         with patch(
             "chassis.app.execute_action",
@@ -478,7 +496,9 @@ class TestHealthEndpoint:
             resp = test_client.get("/v1/health?tenant=acme")
         assert resp.status_code == 200
         call_kwargs = mock_exec.call_args
-        assert call_kwargs.kwargs.get("tenant") == "acme" or                (len(call_kwargs.args) > 0 and "acme" in str(call_kwargs))
+        assert call_kwargs.kwargs.get("tenant") == "acme" or (
+            len(call_kwargs.args) > 0 and "acme" in str(call_kwargs)
+        )
 
     def test_health_default_tenant(self, test_client) -> None:
         """GET /v1/health without tenant param defaults to 'default'."""
@@ -497,7 +517,9 @@ class TestHealthEndpoint:
             resp = test_client.get("/v1/health")
         assert resp.status_code == 200
         call_kwargs = mock_exec.call_args
-        assert call_kwargs.kwargs.get("tenant") == "default" or                (len(call_kwargs.args) > 0 and "default" in str(call_kwargs))
+        assert call_kwargs.kwargs.get("tenant") == "default" or (
+            len(call_kwargs.args) > 0 and "default" in str(call_kwargs)
+        )
 
 
 # ============================================================================
